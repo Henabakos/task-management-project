@@ -1,4 +1,4 @@
-import Integration from "../models/integration.model.ts";
+const Integration = require("../models/integrationModel.js");
 
 export const connectSlack = async (req, res) => {
   try {

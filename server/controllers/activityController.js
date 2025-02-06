@@ -1,4 +1,4 @@
-import Activity from "../models/activity.model.ts";
+const Activity = require("../models/activityModel.js");
 
 export const logActivity = async (user, action, project) => {
   try {
