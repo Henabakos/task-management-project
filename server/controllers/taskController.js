@@ -1,7 +1,8 @@
-const Task = require("../models/taskModel.js");
-const Notification = require("../models/notificationModel.js");
-const Activity = require("../models/activityModel.js");
+const Task = require("../models/taskModel");
+const Project = require("../models/projectModel");
+const User = require("../models/userModel");
 
+// Create a new task
 const createTask = async (req, res) => {
   try {
     const {
@@ -13,8 +14,9 @@ const createTask = async (req, res) => {
       assignee,
       dueDate,
       labels,
+      attachments,
+      subtasks,
     } = req.body;
-
     const task = new Task({
       title,
       description,
@@ -24,81 +26,175 @@ const createTask = async (req, res) => {
       assignee,
       dueDate,
       labels,
+      attachments,
+      subtasks,
     });
     await task.save();
-
-    await Notification.create({
-      recipient: assignee,
-      message: `You have been assigned a new task: ${title}`,
-    });
-    await Activity.create({
-      user: req.user.id,
-      action: `Created task "${title}"`,
-      project,
-    });
-
-    res.status(201).json({ message: "Task created successfully", task });
+    res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-const getTasks = async (req, res) => {
+// Get all tasks for a project
+const getTasksByProject = async (req, res) => {
   try {
-    const { project, status, priority, assignee } = req.query;
-    let filter = {};
-    if (project) filter.project = project;
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-    if (assignee) filter.assignee = assignee;
-
-    const tasks = await Task.find(filter)
-      .populate("assignee")
-      .sort({ dueDate: 1 });
-    res.json(tasks);
+    const { projectId } = req.params;
+    const tasks = await Task.find({ project: projectId })
+      .populate("assignee", "name email")
+      .populate("project", "name");
+    res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-const updateTask = async (req, res) => {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    }).populate("assignee", "name email");
-    if (!updatedTask)
-      return res.status(404).json({ message: "Task not found" });
-
-    res.status(200).json(updatedTask);
-  } catch (error) {
-    res.status(500).json({ message: "Error updating task", error });
-  }
-};
-
-const deleteTask = async (req, res) => {
-  try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-    if (!deletedTask)
-      return res.status(404).json({ message: "Task not found" });
-
-    res.status(200).json({ message: "Task deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting task", error });
-  }
-};
-
+// Get a single task by ID
 const getTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(req.params.id).populate(
-      "assignee",
-      "name email"
-    );
-    if (!task) return res.status(404).json({ message: "Task not found" });
-
+    const { id } = req.params;
+    const task = await Task.findById(id)
+      .populate("assignee", "name email")
+      .populate("project", "name")
+      .populate("history.user", "name email");
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
     res.status(200).json(task);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching task", error });
+    res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = { createTask, getTasks, updateTask, deleteTask, getTaskById };
+// Update a task
+const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const task = await Task.findByIdAndUpdate(id, updates, { new: true })
+      .populate("assignee", "name email")
+      .populate("project", "name");
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Delete a task
+const deleteTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findByIdAndDelete(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Assign a task to a user
+const assignTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    task.assignee = userId;
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update task status
+const updateTaskStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    task.status = status;
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add a comment to a task
+const addComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, comment } = req.body;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    task.history.push({ user: userId, action: comment });
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Add a subtask to a task
+const addSubtask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    task.subtasks.push({ title });
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update a subtask status
+const updateSubtaskStatus = async (req, res) => {
+  try {
+    const { id, subtaskId } = req.params;
+    const { status } = req.body;
+    const task = await Task.findById(id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    const subtask = task.subtasks.id(subtaskId);
+    if (!subtask) {
+      return res.status(404).json({ message: "Subtask not found" });
+    }
+    subtask.status = status;
+    await task.save();
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = {
+  createTask,
+  getTasksByProject,
+  getTaskById,
+  updateTask,
+  deleteTask,
+  assignTask,
+  updateTaskStatus,
+  addComment,
+  addSubtask,
+  updateSubtaskStatus,
+};

@@ -18,7 +18,7 @@ const router = express.Router();
  * @desc    Create a new project
  * @access  Private (Admin & Members)
  */
-router.post("/", authMiddleware, checkRole(["ADMIN", "USER"]), createProject);
+router.post("/", authMiddleware, checkRole(["ADMIN"]), createProject);
 
 /**
  * @route   GET /api/projects
