@@ -4,6 +4,7 @@ const projectRoutes = require("./projectRoutes");
 const taskRoutes = require("./taskRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const integrationRoutes = require("./integrationRoutes");
+const commentRoutes = require("./commentRoutes");
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use("/projects", projectRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/integrations", integrationRoutes);
+router.use("/comments", commentRoutes);
 
-export default router;
+module.exports = router;

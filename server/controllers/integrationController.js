@@ -1,6 +1,6 @@
 const Integration = require("../models/integrationModel.js");
 
-export const connectSlack = async (req, res) => {
+const connectSlack = async (req, res) => {
   try {
     const { projectId, slackWebhookUrl } = req.body;
     const integration = new Integration({
@@ -15,3 +15,5 @@ export const connectSlack = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+module.exports = { connectSlack };

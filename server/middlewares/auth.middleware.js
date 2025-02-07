@@ -1,10 +1,10 @@
-const jwt = requires("jsonwebtoken");
-const User = requires("../models/user.model");
-const dotenv = requires("dotenv");
+const jwt = require("jsonwebtoken");
+const User = require("../models/userModel");
+const dotenv = require("dotenv");
 
 dotenv.config();
 
-export const authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   try {
     const token = req.header("Authorization")?.split(" ")[1];
     if (!token)
@@ -27,7 +27,7 @@ export const authMiddleware = async (req, res, next) => {
   }
 };
 
-export const checkRole = (roles) => {
+const checkRole = (roles) => {
   return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res
@@ -37,3 +37,5 @@ export const checkRole = (roles) => {
     next();
   };
 };
+
+module.exports = { authMiddleware, checkRole };

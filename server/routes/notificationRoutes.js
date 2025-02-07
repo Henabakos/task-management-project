@@ -1,16 +1,48 @@
 const express = require("express");
 const {
-  getUserNotifications,
-} = require("../controllers/notificationController.Js");
-const { authMiddleware } = require("../middleware/auth.middleware");
+  createNotification,
+  getNotificationsByUser,
+  markAsRead,
+  markAsUnread,
+  deleteNotification,
+} = require("../controllers/notificationControllers");
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
 /**
- * @route   GET /api/notifications
- * @desc    Fetch user notifications
+ * @route   POST /api/notifications
+ * @desc    Create a new notification
  * @access  Private (Authenticated Users)
  */
-router.get("/", authMiddleware, getUserNotifications);
+router.post("/", authMiddleware, createNotification);
 
-export default router;
+/**
+ * @route   GET /api/notifications/user/:userId
+ * @desc    Get all notifications for a user
+ * @access  Private (Authenticated Users)
+ */
+router.get("/user/:userId", authMiddleware, getNotificationsByUser);
+
+/**
+ * @route   PUT /api/notifications/:id/read
+ * @desc    Mark a notification as read
+ * @access  Private (Authenticated Users)
+ */
+router.put("/:id/read", authMiddleware, markAsRead);
+
+/**
+ * @route   PUT /api/notifications/:id/unread
+ * @desc    Mark a notification as unread
+ * @access  Private (Authenticated Users)
+ */
+router.put("/:id/unread", authMiddleware, markAsUnread);
+
+/**
+ * @route   DELETE /api/notifications/:id
+ * @desc    Delete a notification
+ * @access  Private (Authenticated Users)
+ */
+router.delete("/:id", authMiddleware, deleteNotification);
+
+module.exports = router;

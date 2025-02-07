@@ -6,7 +6,7 @@ const {
   deleteTask,
   getTaskById,
 } = require("../controllers/taskController");
-const { authMiddleware } = require("../middleware/auth.middleware");
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
@@ -47,4 +47,4 @@ router.get("/:id", authMiddleware, getTaskById);
  */
 router.get("/", authMiddleware, getTasks);
 
-export default router;
+module.exports = router;

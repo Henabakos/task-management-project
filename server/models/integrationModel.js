@@ -17,4 +17,4 @@ const IntegrationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Integration", IntegrationSchema);
+module.exports = mongoose.model("Integration", IntegrationSchema);

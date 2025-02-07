@@ -1,8 +1,8 @@
-const Task = require("../models/taskModel.js/index.js");
-const Notification = require("../models/notificationModel.js/index.js");
+const Task = require("../models/taskModel.js");
+const Notification = require("../models/notificationModel.js");
 const Activity = require("../models/activityModel.js");
 
-export const createTask = async (req, res) => {
+const createTask = async (req, res) => {
   try {
     const {
       title,
@@ -43,7 +43,7 @@ export const createTask = async (req, res) => {
   }
 };
 
-export const getTasks = async (req, res) => {
+const getTasks = async (req, res) => {
   try {
     const { project, status, priority, assignee } = req.query;
     let filter = {};
@@ -61,7 +61,7 @@ export const getTasks = async (req, res) => {
   }
 };
 
-export const updateTask = async (req, res) => {
+const updateTask = async (req, res) => {
   try {
     const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -75,7 +75,7 @@ export const updateTask = async (req, res) => {
   }
 };
 
-export const deleteTask = async (req, res) => {
+const deleteTask = async (req, res) => {
   try {
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
     if (!deletedTask)
@@ -87,7 +87,7 @@ export const deleteTask = async (req, res) => {
   }
 };
 
-export const getTaskById = async (req, res) => {
+const getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id).populate(
       "assignee",
@@ -100,3 +100,5 @@ export const getTaskById = async (req, res) => {
     res.status(500).json({ message: "Error fetching task", error });
   }
 };
+
+module.exports = { createTask, getTasks, updateTask, deleteTask, getTaskById };

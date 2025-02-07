@@ -1,6 +1,6 @@
 const express = require("express");
 const { connectSlack } = require("../controllers/integrationController");
-const { authMiddleware, checkRole } = require("../middleware/auth.middleware");
+const { authMiddleware, checkRole } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ const router = express.Router();
  */
 router.post("/slack", authMiddleware, checkRole(["admin"]), connectSlack);
 
-export default router;
+module.exports = router;
