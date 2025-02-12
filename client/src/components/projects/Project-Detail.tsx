@@ -13,6 +13,7 @@ import {
 import { ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LoadingState from "../layout/Loader";
 
 export function ProjectDetail() {
   const { id } = useParams();
@@ -32,7 +33,7 @@ export function ProjectDetail() {
     }
   }, [dispatch, id]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading && taskLoading) return <LoadingState text={"Loding projects"} />;
   if (error) return <div>Error: {error}</div>;
   if (!selectedProject) return <div>Project not found</div>;
 
@@ -76,7 +77,6 @@ export function ProjectDetail() {
         </div>
       </div>
 
-      {/* Display Tasks */}
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Tasks</h2>
         {taskLoading ? (
@@ -86,7 +86,10 @@ export function ProjectDetail() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {tasks.map((task) => (
-              <Card key={task._id} className="bg-card border border-border">
+              <Card
+                key={task._id}
+                className="bg-foreground border border-gray-700 text-gray-400"
+              >
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold">
                     {task.title}

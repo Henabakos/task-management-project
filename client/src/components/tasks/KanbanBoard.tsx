@@ -3,22 +3,26 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTasksByProject, updateTask } from "@/features/taskSlice";
+import { useParams } from "react-router-dom";
 import type { RootState, AppDispatch } from "@/store/store";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { Loader2, MoreHorizontal } from "lucide-react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { KanbanColumn } from "./KanabanColumn";
-import type Task from "@/features/taskSlice";
+import LoadingState from "../layout/Loader";
 
-export function KanbanBoard({ projectId }: { projectId: string }) {
+export function KanbanBoard() {
+  const { projectId } = useParams();
   const dispatch = useDispatch<AppDispatch>();
   const { tasks, loading, error } = useSelector(
     (state: RootState) => state.task
   );
 
   useEffect(() => {
-    dispatch(fetchTasksByProject(projectId));
+    if (projectId) {
+      dispatch(fetchTasksByProject(projectId));
+    }
   }, [dispatch, projectId]);
 
   const columns: { id: Task["status"]; title: string; color: string }[] = [
@@ -31,12 +35,11 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
     dispatch(updateTask({ id: taskId, updates: { status: newStatus } }));
   };
 
-  if (loading) return <div>Loading tasks...</div>;
+  if (loading) return <LoadingState text={"Loading Tasks"} />;
   if (error) return <div>Error: {error}</div>;
-
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="p-6 bg-background min-h-screen">
+      <div className="p-6 bg-foreground min-h-screen">
         <div className="flex items-center justify-between mb-6">
           <div className="flex space-x-1">
             <Button
@@ -74,6 +77,7 @@ export function KanbanBoard({ projectId }: { projectId: string }) {
               key={column.id}
               status={column.id}
               title={column.title}
+              projectId={projectId ?? ""}
               color={column.color}
               tasks={tasks.filter((task) => task.status === column.id)}
               onDropTask={moveTask}

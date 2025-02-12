@@ -1,5 +1,6 @@
 import { useDrop } from "react-dnd";
 import { KanbanTask } from "./KanbanTask";
+import { AddTaskForm } from "./AddTask-form";
 import type { Task } from "@/features/taskSlice";
 
 interface KanbanColumnProps {
@@ -7,6 +8,7 @@ interface KanbanColumnProps {
   title: string;
   color: string;
   tasks: Task[];
+  projectId: string;
   onDropTask: (taskId: string, newStatus: Task["status"]) => void;
 }
 
@@ -15,6 +17,7 @@ export function KanbanColumn({
   title,
   color,
   tasks,
+  projectId,
   onDropTask,
 }: KanbanColumnProps) {
   const [{ isOver }, drop] = useDrop(() => ({
@@ -30,7 +33,7 @@ export function KanbanColumn({
   return (
     <div
       ref={drop}
-      className={`space-y-4 ${
+      className={`flex flex-col space-y-4 ${
         isOver ? "bg-muted/50" : ""
       } p-4 rounded-lg transition-colors`}
     >
@@ -39,11 +42,12 @@ export function KanbanColumn({
         <span className="font-medium">{title}</span>
         <span className="text-muted-foreground">{tasks.length}</span>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 flex-grow">
         {tasks.map((task) => (
           <KanbanTask key={task._id} task={task} />
         ))}
       </div>
+      <AddTaskForm projectId={projectId} status={status} />
     </div>
   );
 }

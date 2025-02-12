@@ -13,6 +13,7 @@ import Navbar from "./components/layout/Navbar";
 import { ProjectDetail } from "./components/projects/Project-Detail";
 import LoginPage from "./components/users/Login";
 import useAuth from "./hooks/useAuth";
+import { KanbanBoard } from "./components/tasks/KanbanBoard";
 
 const AppContent = () => {
   const location = useLocation();
@@ -30,7 +31,7 @@ const AppContent = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
-            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/tasks/:projectId" element={<KanbanBoard />} />
             <Route path="/notification" element={<Notification />} />
           </Routes>
         </div>

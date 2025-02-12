@@ -45,7 +45,7 @@ export const fetchUserProfile = createAsyncThunk(
       const { currentUser } = state.auth;
       if (!currentUser?.token) throw new Error("No authentication token");
 
-      const response = await api.get(`/users/${currentUser.id}`, {
+      const response = await api.get(`/auth/${currentUser.id}`, {
         headers: {
           Authorization: `Bearer ${currentUser.token}`,
         },
@@ -64,6 +64,12 @@ const authSlice = createSlice({
     logout(state) {
       state.currentUser = null;
       localStorage.removeItem("token");
+    },
+    setUser(state, action: PayloadAction<User>) {
+      state.currentUser = action.payload;
+    },
+    clearUser(state) {
+      state.currentUser = null;
     },
   },
   extraReducers: (builder) => {

@@ -4,6 +4,7 @@ import {
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import api from "@/api/api";
+import { Payload } from "recharts/types/component/DefaultLegendContent";
 
 interface Subtask {
   _id?: string;
@@ -22,18 +23,21 @@ interface HistoryItem {
   timestamp: string;
 }
 
-interface Task {
-  _id: string;
+export interface NewTask {
   title: string;
-  description?: string;
-  project: string;
-  status: "TODO" | "IN_PROGRESS" | "DONE";
+  description: string;
   priority: "LOW" | "MEDIUM" | "HIGH";
-  assignee?: string;
+  status: "TODO" | "IN_PROGRESS" | "DONE";
+  project: string;
+  labels?: string[];
   dueDate?: string;
-  labels: string[];
-  attachments: Attachment[];
-  subtasks: Subtask[];
+  attachments: [];
+  subtasks?: { _id: string; title: string; status: "TODO" | "DONE" }[];
+}
+
+export interface Task extends NewTask {
+  _id: string;
+  assignee?: string;
   history: HistoryItem[];
   comments: string[];
   createdAt: string;
@@ -47,19 +51,15 @@ interface TasksState {
   error: string | null;
 }
 
-const initialState: TasksState = {
-  tasks: [],
-  selectedTask: null,
-  loading: false,
-  error: null,
-};
-
-export const fetchTasksByProject = createAsyncThunk(
+export const fetchTasksByProject = createAsyncThunk<Task[], string>(
   "tasks/fetchByProject",
-  async (projectId: string, { rejectWithValue }) => {
+  async (
+    projectId: string,
+    { rejectWithValue }
+  ): Promise<Task[] | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.get(`/tasks/project/${projectId}`);
-      return response.data;
+      return response.data as Task[];
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to fetch tasks"
@@ -71,15 +71,12 @@ export const fetchTasksByProject = createAsyncThunk(
 export const createTask = createAsyncThunk(
   "tasks/create",
   async (
-    taskData: Omit<
-      Task,
-      "_id" | "history" | "comments" | "createdAt" | "updatedAt"
-    >,
+    taskData: Omit<NewTask, "id">,
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.post("/tasks", taskData);
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to create task"
@@ -93,10 +90,10 @@ export const updateTask = createAsyncThunk(
   async (
     { id, updates }: { id: string; updates: Partial<Task> },
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.put(`/tasks/${id}`, updates);
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to update task"
@@ -124,10 +121,10 @@ export const assignTask = createAsyncThunk(
   async (
     { id, userId }: { id: string; userId: string },
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.put(`/tasks/${id}/assign`, { userId });
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to assign task"
@@ -141,10 +138,10 @@ export const updateTaskStatus = createAsyncThunk(
   async (
     { id, status }: { id: string; status: Task["status"] },
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.put(`/tasks/${id}/status`, { status });
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to update task status"
@@ -158,13 +155,13 @@ export const addComment = createAsyncThunk(
   async (
     { id, userId, comment }: { id: string; userId: string; comment: string },
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.post(`/tasks/${id}/comments`, {
         userId,
         comment,
       });
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to add comment"
@@ -175,10 +172,13 @@ export const addComment = createAsyncThunk(
 
 export const addSubtask = createAsyncThunk(
   "tasks/addSubtask",
-  async ({ id, title }: { id: string; title: string }, { rejectWithValue }) => {
+  async (
+    { id, title }: { id: string; title: string },
+    { rejectWithValue }
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.post(`/tasks/${id}/subtasks`, { title });
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to add subtask"
@@ -196,12 +196,12 @@ export const updateSubtaskStatus = createAsyncThunk(
       status,
     }: { id: string; subtaskId: string; status: Subtask["status"] },
     { rejectWithValue }
-  ) => {
+  ): Promise<Task | ReturnType<typeof rejectWithValue>> => {
     try {
       const response = await api.put(`/tasks/${id}/subtasks/${subtaskId}`, {
         status,
       });
-      return response.data;
+      return response.data as Task;
     } catch (error: any) {
       return rejectWithValue(
         error.response?.data?.error || "Failed to update subtask status"
@@ -209,6 +209,13 @@ export const updateSubtaskStatus = createAsyncThunk(
     }
   }
 );
+
+const initialState: TasksState = {
+  tasks: [],
+  selectedTask: null,
+  loading: false,
+  error: null,
+};
 
 const taskSlice = createSlice({
   name: "tasks",
@@ -238,7 +245,11 @@ const taskSlice = createSlice({
       .addCase(createTask.fulfilled, (state, action: PayloadAction<Task>) => {
         state.tasks.push(action.payload);
       })
+      .addCase(updateTask.pending, (state, action: PayloadAction<Task>) => {
+        state.loading = true;
+      })
       .addCase(updateTask.fulfilled, (state, action: PayloadAction<Task>) => {
+        state.loading = false;
         const index = state.tasks.findIndex(
           (task) => task._id === action.payload._id
         );

@@ -6,6 +6,7 @@ import { fetchAllProjects } from "@/features/projectSlice";
 import type { RootState, AppDispatch } from "@/store/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LoadingState from "../layout/Loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -52,7 +54,7 @@ export function ProjectList() {
     dispatch(fetchAllProjects());
   };
 
-  if (loading) return <LoadingState />;
+  if (loading) return <LoadingState text={"loading a project"} />;
   if (error) return <ErrorState error={error} />;
 
   return (
@@ -69,6 +71,7 @@ export function ProjectList() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>this is project</DialogDescription>
           </DialogHeader>
           <CreateProjectForm onSuccess={handleCreateSuccess} />
         </DialogContent>
@@ -76,16 +79,6 @@ export function ProjectList() {
     </div>
   );
 }
-
-function LoadingState() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-8 h-8 animate-spin" />
-      <span className="sr-only">Loading projects...</span>
-    </div>
-  );
-}
-
 function ErrorState({ error }: { error: string }) {
   return (
     <div className="text-center text-red-500 p-6" role="alert">
