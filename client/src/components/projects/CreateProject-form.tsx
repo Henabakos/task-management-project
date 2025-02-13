@@ -1,8 +1,8 @@
-import type React from "react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store/store";
 import { createProject } from "@/features/projectSlice";
+import { fetchTeams } from "@/features/teamSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,84 +16,63 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { fetchUserProfile } from "@/features/authSlice";
+import { jwtDecode } from "jwt-decode";
+
+interface DecodedToken {
+  id: string;
+}
 
 export function CreateProjectForm() {
   const dispatch = useDispatch<AppDispatch>();
-  const { currentUser, loading, error } = useSelector(
-    (state: RootState) => state.auth
-  );
-
-  useEffect(() => {
-    dispatch(fetchUserProfile());
-  }, [dispatch]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!currentUser) {
-    return <div>No user data</div>;
-  }
-
-  const userid = currentUser.id;
+  const { teams, loading } = useSelector((state: RootState) => state.team);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    visibility: "PRIVATE" | "PUBLIC";
+    deadline: Date | undefined;
+    team: string;
+  }>({
     name: "",
     description: "",
     visibility: "PRIVATE",
-    deadline: undefined as Date | undefined,
-    members: [] as { user: string; role: string }[],
+    deadline: undefined,
+    team: "",
   });
-  if (!currentUser) {
-    console.log(currentUser);
-  }
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded: DecodedToken = jwtDecode(token);
+        setUserId(decoded.id);
+      } catch (error) {
+        console.error("Invalid token:", error);
+      }
+    }
+    dispatch(fetchTeams());
+  }, [dispatch]);
+
+  if (!userId) return <div>Loading...</div>;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleVisibilityChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, visibility: value }));
+    setFormData({ ...formData, visibility: value as "PRIVATE" | "PUBLIC" });
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    setFormData((prev) => ({ ...prev, deadline: date }));
+    setFormData({ ...formData, deadline: date });
   };
 
-  const handleAddMember = () => {
-    setFormData((prev) => ({
-      ...prev,
-      members: [...prev.members, { user: "", role: "VIEWER" }],
-    }));
-  };
-
-  const handleMemberChange = (
-    index: number,
-    field: "user" | "role",
-    value: string
-  ) => {
-    setFormData((prev) => {
-      const newMembers = [...prev.members];
-      newMembers[index][field] = value;
-      return { ...prev, members: newMembers };
-    });
-  };
-
-  const handleRemoveMember = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      members: prev.members.filter((_, i) => i !== index),
-    }));
+  const handleTeamChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData({ ...formData, team: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,17 +86,14 @@ export function CreateProjectForm() {
           deadline: formData.deadline
             ? formData.deadline.toISOString()
             : undefined,
-          owner: userid,
+          owner: userId,
         })
       ).unwrap();
-      toast({
-        title: "Success",
-        description: "Project created successfully!",
-      });
+      toast({ title: "Success", description: "Project created successfully!" });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create project. Please try again.",
+        description: "Failed to create project.",
         variant: "destructive",
       });
     } finally {
@@ -156,14 +132,10 @@ export function CreateProjectForm() {
           onValueChange={handleVisibilityChange}
           className="flex space-x-4"
         >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="PRIVATE" id="private" />
-            <Label htmlFor="private">Private</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="PUBLIC" id="public" />
-            <Label htmlFor="public">Public</Label>
-          </div>
+          <RadioGroupItem value="PRIVATE" id="private" />
+          <Label htmlFor="private">Private</Label>
+          <RadioGroupItem value="PUBLIC" id="public" />
+          <Label htmlFor="public">Public</Label>
         </RadioGroup>
       </div>
 
@@ -173,10 +145,7 @@ export function CreateProjectForm() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.deadline && "text-muted-foreground"
-              )}
+              className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {formData.deadline ? (
@@ -198,45 +167,25 @@ export function CreateProjectForm() {
       </div>
 
       <div>
-        <Label>Members</Label>
-        {formData.members.map((member, index) => (
-          <div key={index} className="flex items-center space-x-2 mt-2">
-            <Input
-              placeholder="User ID"
-              value={member.user}
-              onChange={(e) =>
-                handleMemberChange(index, "user", e.target.value)
-              }
-            />
-            <select
-              value={member.role}
-              onChange={(e) =>
-                handleMemberChange(index, "role", e.target.value)
-              }
-              className="border rounded p-2"
-            >
-              <option value="VIEWER">Viewer</option>
-              <option value="EDITOR">Editor</option>
-              <option value="OWNER">Owner</option>
-            </select>
-            <Button
-              type="button"
-              onClick={() => handleRemoveMember(index)}
-              variant="destructive"
-              size="sm"
-            >
-              Remove
-            </Button>
-          </div>
-        ))}
-        <Button
-          type="button"
-          onClick={handleAddMember}
-          variant="outline"
-          className="mt-2"
+        <Label htmlFor="team">Select Team</Label>
+        <select
+          id="team"
+          name="team"
+          value={formData.team}
+          onChange={handleTeamChange}
+          className="w-full p-2 border rounded"
         >
-          Add Member
-        </Button>
+          <option value="">Choose a team</option>
+          {loading ? (
+            <option disabled>Loading teams...</option>
+          ) : (
+            teams.map((team) => (
+              <option key={team._id} value={team._id}>
+                {team.name}
+              </option>
+            ))
+          )}
+        </select>
       </div>
 
       <Button type="submit" disabled={isLoading}>

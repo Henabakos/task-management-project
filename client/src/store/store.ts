@@ -4,6 +4,7 @@ import projectReducer from "../features/projectSlice";
 import taskReducer from "../features/taskSlice";
 import commentReducer from "../features/commentSlice";
 import notificationReducer from "../features/notificationSlice";
+import teamReducer from "@/features/teamSlice";
 import integrationReducer from "../features/integrationSlice";
 
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
     auth: authReducer,
     project: projectReducer,
     task: taskReducer,
+    team: teamReducer,
     comment: commentReducer,
     notification: notificationReducer,
     integration: integrationReducer,

@@ -60,7 +60,7 @@ const Sidebar = () => {
         </div>
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-zinc-500">TASK</span>
+            <span className="text-xs font-semibold text-zinc-500 ">TEAM</span>
             <Button
               variant="ghost"
               size="icon"
@@ -72,10 +72,12 @@ const Sidebar = () => {
           <nav className="space-y-1">
             <Button
               variant="ghost"
-              className="w-full justify-start text-violet-500 hover:bg-zinc-800/50"
+              className="w-full justify-start text-gray-400 hover:text-white bg-foreground hover:bg-zinc-800/50"
               asChild
             >
-              <Link to="/tasks">Team task</Link>
+              <Link to="/teams" className="">
+                Teams
+              </Link>
             </Button>
             <Button
               variant="ghost"

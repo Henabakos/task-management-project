@@ -1,8 +1,6 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllProjects } from "@/features/projectSlice";
+import { fetchProjects } from "@/features/projectSlice";
 import type { RootState, AppDispatch } from "@/store/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,13 +30,13 @@ export function ProjectList() {
   const projectsPerPage = 6;
 
   useEffect(() => {
-    dispatch(fetchAllProjects());
+    dispatch(fetchProjects());
   }, [dispatch]);
 
   const filteredProjects = projects.filter(
     (project) =>
       project.name.toLowerCase().includes(search.toLowerCase()) ||
-      project.description.toLowerCase().includes(search.toLowerCase())
+      (project.description ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
   const indexOfLastProject = currentPage * projectsPerPage;
@@ -51,7 +49,7 @@ export function ProjectList() {
 
   const handleCreateSuccess = () => {
     setIsCreateDialogOpen(false);
-    dispatch(fetchAllProjects());
+    dispatch(fetchProjects());
   };
 
   if (loading) return <LoadingState text={"loading a project"} />;

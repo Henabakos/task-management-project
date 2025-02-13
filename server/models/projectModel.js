@@ -9,16 +9,7 @@ const ProjectSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    members: [
-      {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        role: {
-          type: String,
-          enum: ["OWNER", "EDITOR", "VIEWER"],
-          default: "VIEWER",
-        },
-      },
-    ],
+    team: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
     visibility: {
       type: String,
       enum: ["PUBLIC", "PRIVATE"],

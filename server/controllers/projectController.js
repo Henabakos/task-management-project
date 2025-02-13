@@ -1,47 +1,56 @@
-const Project = require("../models/projectModel");
-const User = require("../models/userModel");
-const Activity = require("../models/activityModel");
+const Project = require("../models/Project");
+const User = require("../models/User");
+const Team = require("../models/Team");
 
-// Create a new project
 const createProject = async (req, res) => {
   try {
-    const { name, description, owner, members, visibility, deadline } =
-      req.body;
+    const { name, description, owner, team, visibility, deadline } = req.body;
+
+    // Check if the owner exists
+    const ownerExists = await User.findById(owner);
+    if (!ownerExists) {
+      return res.status(404).json({ message: "Owner not found" });
+    }
+
+    // Check if the team exists
+    if (team) {
+      const teamExists = await Team.findById(team);
+      if (!teamExists) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+    }
+
     const project = new Project({
       name,
       description,
       owner,
-      members,
+      team,
       visibility,
       deadline,
     });
+
     await project.save();
-    res.status(201).json(project);
+    res.status(201).json({ message: "Project created successfully", project });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get all projects
-const getAllProjects = async (req, res) => {
+const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find()
-      .populate("owner", "name email")
-      .populate("members.user", "name email");
+    const projects = await Project.find().populate("owner team activityLog");
     res.status(200).json(projects);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Get a single project by ID
 const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
-    const project = await Project.findById(id)
-      .populate("owner", "name email")
-      .populate("members.user", "name email")
-      .populate("activityLog");
+    const project = await Project.findById(id).populate(
+      "owner team activityLog"
+    );
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
@@ -51,24 +60,35 @@ const getProjectById = async (req, res) => {
   }
 };
 
-// Update a project
 const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-    const project = await Project.findByIdAndUpdate(id, updates, { new: true })
-      .populate("owner", "name email")
-      .populate("members.user", "name email");
+    const { name, description, team, visibility, deadline } = req.body;
+
+    // Check if the team exists
+    if (team) {
+      const teamExists = await Team.findById(team);
+      if (!teamExists) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+    }
+
+    const project = await Project.findByIdAndUpdate(
+      id,
+      { name, description, team, visibility, deadline },
+      { new: true }
+    );
+
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-    res.status(200).json(project);
+
+    res.status(200).json({ message: "Project updated successfully", project });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// Delete a project
 const deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,66 +102,10 @@ const deleteProject = async (req, res) => {
   }
 };
 
-// Add a member to a project
-const addMember = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { userId, role } = req.body;
-    const project = await Project.findById(id);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-    project.members.push({ user: userId, role });
-    await project.save();
-    res.status(200).json(project);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Remove a member from a project
-const removeMember = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { userId } = req.body;
-    const project = await Project.findById(id);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-    project.members = project.members.filter(
-      (member) => member.user.toString() !== userId
-    );
-    await project.save();
-    res.status(200).json(project);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Log activity
-const logActivity = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { activityId } = req.body;
-    const project = await Project.findById(id);
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-    project.activityLog.push(activityId);
-    await project.save();
-    res.status(200).json(project);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 module.exports = {
   createProject,
-  getAllProjects,
+  getProjects,
   getProjectById,
   updateProject,
   deleteProject,
-  addMember,
-  removeMember,
-  logActivity,
 };

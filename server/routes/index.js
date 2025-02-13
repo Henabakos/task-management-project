@@ -5,11 +5,13 @@ const taskRoutes = require("./taskRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const integrationRoutes = require("./integrationRoutes");
 const commentRoutes = require("./commentRoutes");
+const teamRoutes = require("./teamRoutes");
 
 const router = express.Router();
 
 router.use("/auth", authRoutes);
 router.use("/projects", projectRoutes);
+router.use("/team", teamRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/integrations", integrationRoutes);

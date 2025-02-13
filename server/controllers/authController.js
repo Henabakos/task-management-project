@@ -53,7 +53,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Get all users
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
@@ -63,7 +62,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// Get a single user by ID
 const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -77,7 +75,6 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Update a user
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,7 +92,6 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Delete a user
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -109,11 +105,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Invite a member to a project (Admin only)
 const inviteMember = async (req, res) => {
   try {
     const { projectId, userId } = req.body;
-    const adminId = req.user.id; // Assuming req.user contains the authenticated user
+    const adminId = req.user.id;
     const admin = await User.findById(adminId);
 
     if (admin.role !== "ADMIN") {
@@ -149,7 +144,6 @@ const inviteMember = async (req, res) => {
   }
 };
 
-// Accept an invitation
 const acceptInvitation = async (req, res) => {
   try {
     const { notificationId } = req.body;

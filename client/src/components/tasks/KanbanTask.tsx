@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useDrag } from "react-dnd";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +27,11 @@ import {
   type Task,
 } from "@/features/taskSlice";
 import { AppDispatch } from "@/store/store";
+import { jwtDecode } from "jwt-decode";
 
+interface DecodedToken {
+  id: string;
+}
 interface KanbanTaskProps {
   task: Task;
 }
@@ -35,9 +39,17 @@ interface KanbanTaskProps {
 export function KanbanTask({ task }: KanbanTaskProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [userid, setUserId] = useState<string | null>(null);
   const [description, setDescription] = useState(task.description);
   const [newSubtask, setNewSubtask] = useState("");
   const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded: DecodedToken = jwtDecode(token);
+      setUserId(decoded.id);
+    }
+  }, []);
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
@@ -61,7 +73,7 @@ export function KanbanTask({ task }: KanbanTaskProps) {
       await dispatch(
         addComment({
           id: task._id,
-          userId: "current-user-id", // Replace with actual user ID
+          userId: userid!,
           comment: newComment,
         })
       );

@@ -1,13 +1,10 @@
 const express = require("express");
 const {
   createProject,
-  getAllProjects,
+  getProjects,
   getProjectById,
   updateProject,
   deleteProject,
-  addMember,
-  removeMember,
-  logActivity,
 } = require("../controllers/projectController");
 const { authMiddleware, checkRole } = require("../middlewares/auth.middleware");
 
@@ -25,7 +22,7 @@ router.post("/", authMiddleware, checkRole(["ADMIN"]), createProject);
  * @desc    Get all projects
  * @access  Private (Authenticated Users)
  */
-router.get("/", authMiddleware, getAllProjects);
+router.get("/", authMiddleware, getProjects);
 
 /**
  * @route   GET /api/projects/:id
@@ -47,31 +44,5 @@ router.put("/:id", authMiddleware, checkRole(["ADMIN"]), updateProject);
  * @access  Private (Only Project Admins)
  */
 router.delete("/:id", authMiddleware, checkRole(["ADMIN"]), deleteProject);
-
-/**
- * @route   POST /api/projects/:id/members
- * @desc    Add a member to a project
- * @access  Private (Only Project Admins)
- */
-router.post("/:id/members", authMiddleware, checkRole(["ADMIN"]), addMember);
-
-/**
- * @route   DELETE /api/projects/:id/members
- * @desc    Remove a member from a project
- * @access  Private (Only Project Admins)
- */
-router.delete(
-  "/:id/members",
-  authMiddleware,
-  checkRole(["ADMIN"]),
-  removeMember
-);
-
-/**
- * @route   POST /api/projects/:id/activity
- * @desc    Log activity for a project
- * @access  Private (Authenticated Users)
- */
-router.post("/:id/activity", authMiddleware, logActivity);
 
 module.exports = router;
