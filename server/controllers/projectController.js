@@ -1,6 +1,6 @@
-const Project = require("../models/Project");
-const User = require("../models/User");
-const Team = require("../models/Team");
+const Project = require("../models/projectModel");
+const User = require("../models/userModel");
+const Team = require("../models/teamModel");
 
 const createProject = async (req, res) => {
   try {

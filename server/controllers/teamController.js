@@ -1,5 +1,5 @@
-const Team = require("../models/Team");
-const User = require("../models/User");
+const Team = require("../models/teamModel");
+const User = require("../models/userModel");
 
 const createTeam = async (req, res) => {
   try {
