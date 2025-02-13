@@ -8,7 +8,6 @@ import LoadingState from "../layout/Loader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +32,8 @@ export function ProjectList() {
     dispatch(fetchProjects());
   }, [dispatch]);
 
+  if (!projects) return <div>no project</div>;
+
   const filteredProjects = projects.filter(
     (project) =>
       project.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -53,7 +54,8 @@ export function ProjectList() {
   };
 
   if (loading) return <LoadingState text={"loading a project"} />;
-  if (error) return <ErrorState error={error} />;
+  if (error)
+    return <ErrorState error={error} retry={() => dispatch(fetchProjects())} />;
 
   return (
     <div className="p-6 space-y-6 bg-foreground">
@@ -77,10 +79,13 @@ export function ProjectList() {
     </div>
   );
 }
-function ErrorState({ error }: { error: string }) {
+function ErrorState({ error, retry }: { error: string; retry: () => void }) {
   return (
     <div className="text-center text-red-500 p-6" role="alert">
-      {error}
+      <p>{error}</p>
+      <Button variant="outline" onClick={retry} className="mt-2">
+        Retry
+      </Button>
     </div>
   );
 }
@@ -176,6 +181,19 @@ function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - 1 && i <= currentPage + 1)
+    ) {
+      pageNumbers.push(i);
+    } else if (pageNumbers[pageNumbers.length - 1] !== "...") {
+      pageNumbers.push("...");
+    }
+  }
+
   return (
     <div className="flex justify-center gap-2 mt-6">
       <Button
@@ -186,16 +204,22 @@ function Pagination({
       >
         Previous
       </Button>
-      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-        <Button
-          key={page}
-          variant={currentPage === page ? "default" : "outline"}
-          size="sm"
-          onClick={() => setCurrentPage(page)}
-        >
-          {page}
-        </Button>
-      ))}
+      {pageNumbers.map((page, index) =>
+        page === "..." ? (
+          <span key={index} className="px-2">
+            ...
+          </span>
+        ) : (
+          <Button
+            key={page}
+            variant={currentPage === page ? "default" : "outline"}
+            size="sm"
+            onClick={() => setCurrentPage(page as number)}
+          >
+            {page}
+          </Button>
+        )
+      )}
       <Button
         variant="outline"
         size="sm"

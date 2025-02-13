@@ -1,7 +1,7 @@
 const Project = require("../models/projectModel");
 const User = require("../models/userModel");
 const Team = require("../models/teamModel");
-
+const Activity = require("../models/activityModel");
 const createProject = async (req, res) => {
   try {
     const { name, description, owner, team, visibility, deadline } = req.body;
@@ -30,6 +30,18 @@ const createProject = async (req, res) => {
     });
 
     await project.save();
+
+    // Log activity
+    const activity = new Activity({
+      action: "Created project",
+      user: owner,
+      project: project._id,
+    });
+    await activity.save();
+
+    project.activityLog.push(activity._id);
+    await project.save();
+
     res.status(201).json({ message: "Project created successfully", project });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -83,6 +95,17 @@ const updateProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
+    // Log activity
+    const activity = new Activity({
+      action: "Updated project",
+      user: req.user._id, // Assuming you have user information in req.user
+      project: project._id,
+    });
+    await activity.save();
+
+    project.activityLog.push(activity._id);
+    await project.save();
+
     res.status(200).json({ message: "Project updated successfully", project });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -96,6 +119,15 @@ const deleteProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
+
+    // Log activity
+    const activity = new Activity({
+      action: "Deleted project",
+      user: req.user._id, // Assuming you have user information in req.user
+      project: project._id,
+    });
+    await activity.save();
+
     res.status(200).json({ message: "Project deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
