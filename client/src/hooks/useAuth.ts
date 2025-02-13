@@ -1,21 +1,30 @@
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { RootState } from "@/store/store";
+import { RootState, AppDispatch } from "@/store/store";
+import { fetchUserProfile } from "@/features/authSlice";
 
 const useAuth = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const { currentUser } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       if (!currentUser) {
+        dispatch(fetchUserProfile());
       }
     } else {
       navigate("/login");
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, dispatch]);
+
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
+    }
+  }, [navigate]);
 
   return currentUser;
 };

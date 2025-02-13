@@ -1,6 +1,6 @@
 const User = require("../models/userModel");
 const Project = require("../models/projectModel");
-const Notification = require("../models/notificationModel"); // Assuming you have a Notification model
+const Notification = require("../models/notificationModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
