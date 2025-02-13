@@ -6,7 +6,6 @@ const createProject = async (req, res) => {
   try {
     const { name, description, owner, team, visibility, deadline } = req.body;
 
-    // Check if the owner exists
     const ownerExists = await User.findById(owner);
     if (!ownerExists) {
       return res.status(404).json({ message: "Owner not found" });

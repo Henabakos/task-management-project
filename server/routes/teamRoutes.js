@@ -16,7 +16,7 @@ const router = express.Router();
  * @desc    Create a new team
  * @access  Private (Admin & Members)
  */
-router.post("/teams", authMiddleware, checkRole(["ADMIN"]), createTeam);
+router.post("/", authMiddleware, checkRole(["ADMIN"]), createTeam);
 
 /**
  * @route   GET /api/teams
@@ -24,7 +24,7 @@ router.post("/teams", authMiddleware, checkRole(["ADMIN"]), createTeam);
  * @access  Private (Authenticated Users)
  */
 
-router.get("/teams", authMiddleware, getTeams);
+router.get("/", authMiddleware, getTeams);
 
 /**
  * @route   GET /api/team/:id
@@ -32,7 +32,7 @@ router.get("/teams", authMiddleware, getTeams);
  * @access  Private (Authenticated Users)
  */
 
-router.get("/teams/:id", authMiddleware, getTeamById);
+router.get("/:id", authMiddleware, getTeamById);
 
 /**
  * @route   PUT /api/team/:id
@@ -40,14 +40,14 @@ router.get("/teams/:id", authMiddleware, getTeamById);
  * @access  Private (Only team Admins)
  */
 
-router.put("/teams/:id", authMiddleware, checkRole(["ADMIN"]), updateTeam);
+router.put("/:id", authMiddleware, checkRole(["ADMIN"]), updateTeam);
 
 /**
  * @route   DELETE /api/teams/:id
  * @desc    Delete a team
  * @access  Private (Only Team Admins)
  */
-router.delete("/teams/:id", authMiddleware, checkRole(["ADMIN"]), deleteTeam);
+router.delete("/:id", authMiddleware, checkRole(["ADMIN"]), deleteTeam);
 
 /**
  * @route   POST /api/teams/addUser
@@ -55,11 +55,6 @@ router.delete("/teams/:id", authMiddleware, checkRole(["ADMIN"]), deleteTeam);
  * @access  Private (Only Team Admins)
  */
 
-router.post(
-  "/teams/addUser",
-  authMiddleware,
-  checkRole(["ADMIN"]),
-  addUserToTeam
-);
+router.post("/addUser", authMiddleware, checkRole(["ADMIN"]), addUserToTeam);
 
 module.exports = router;

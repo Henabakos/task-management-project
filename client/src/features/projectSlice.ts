@@ -17,11 +17,13 @@ interface Project {
 interface ProjectState {
   projects: Project[];
   loading: boolean;
+  selectedProject: Project | null;
   error: string | null;
 }
 
 const initialState: ProjectState = {
   projects: [],
+  selectedProject: null,
   loading: false,
   error: null,
 };
@@ -163,14 +165,7 @@ const projectSlice = createSlice({
         fetchProjectById.fulfilled,
         (state, action: PayloadAction<Project>) => {
           state.loading = false;
-          const index = state.projects.findIndex(
-            (project) => project._id === action.payload._id
-          );
-          if (index !== -1) {
-            state.projects[index] = action.payload;
-          } else {
-            state.projects.push(action.payload);
-          }
+          state.selectedProject = action.payload;
         }
       )
       .addCase(

@@ -7,18 +7,16 @@ import {
 import Sidbar from "./components/layout/Sidbar";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Project";
-import Tasks from "./pages/Task";
 import Notification from "./pages/Notification";
 import Navbar from "./components/layout/Navbar";
 import { ProjectDetail } from "./components/projects/Project-Detail";
 import LoginPage from "./components/users/Login";
-import useAuth from "./hooks/useAuth";
 import { KanbanBoard } from "./components/tasks/KanbanBoard";
+import TeamManagement from "./pages/Team-Management";
 
 const AppContent = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
-  const currentUser = useAuth();
 
   return (
     <div className="flex">
@@ -31,6 +29,7 @@ const AppContent = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetail />} />
+            <Route path="/teams" element={<TeamManagement />} />
             <Route path="/tasks/:projectId" element={<KanbanBoard />} />
             <Route path="/notification" element={<Notification />} />
           </Routes>

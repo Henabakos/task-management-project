@@ -37,6 +37,18 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const createUser = createAsyncThunk(
+  "user/createUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      const response = await axios.post("/api/users", userData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 export const fetchUserProfile = createAsyncThunk(
   "user/fetchProfile",
   async (_, { getState, rejectWithValue }) => {
@@ -103,7 +115,19 @@ const authSlice = createSlice({
           state.loading = false;
           state.error = action.payload;
         }
-      );
+      )
+      .addCase(createUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.loading = false;
+        state.currentUser = action.payload;
+      })
+      .addCase(createUser.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

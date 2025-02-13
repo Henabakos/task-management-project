@@ -32,11 +32,13 @@ export function ProjectList() {
     dispatch(fetchProjects());
   }, [dispatch]);
 
-  if (!projects) return <div>no project</div>;
+  if (!projects || !Array.isArray(projects)) {
+    return <div>No projects found</div>;
+  }
 
   const filteredProjects = projects.filter(
     (project) =>
-      project.name.toLowerCase().includes(search.toLowerCase()) ||
+      project.name?.toLowerCase().includes(search.toLowerCase()) ||
       (project.description ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
@@ -122,7 +124,7 @@ const ProjectGrid: React.FC<ProjectGridProps> = ({ projects }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {projects.map((project: Project) => (
         <Link to={`/projects/${project._id}`} key={project._id}>
-          <ProjectCard project={project} />
+          <ProjectCard project={project} key={project._id} />
         </Link>
       ))}
     </div>
@@ -142,9 +144,17 @@ function ProjectCard({ project }: { project: any }) {
           Deadline: {new Date(project.deadline).toLocaleDateString()}
         </div>
         <div className="flex items-center justify-between">
-          <AvatarGroup members={project.members} />
+          <AvatarGroup members={project.members ?? []} />
+
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{project.activityLog.length} activities</span>
+            <span>
+              {(project.activityLog || []).map(
+                (log: { id: string; message: string }) => (
+                  <div key={log.id}>{log.message}</div>
+                )
+              )}
+              activities
+            </span>
           </div>
         </div>
       </CardContent>
@@ -152,7 +162,11 @@ function ProjectCard({ project }: { project: any }) {
   );
 }
 
-function AvatarGroup({ members }: { members: any[] }) {
+function AvatarGroup({ members }: { members?: any[] }) {
+  if (!members || members.length === 0) {
+    return <div className="text-sm text-muted-foreground">No members</div>;
+  }
+
   return (
     <div className="flex -space-x-2">
       {members.slice(0, 3).map((member, index) => (
@@ -195,9 +209,10 @@ function Pagination({
   }
 
   return (
-    <div className="flex justify-center gap-2 mt-6">
+    <div className="flex justify-center gap-2 mt-6 bg-foreground text-white ">
       <Button
         variant="outline"
+        className="bg-foreground text-white"
         size="sm"
         onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
         disabled={currentPage === 1}
@@ -211,6 +226,7 @@ function Pagination({
           </span>
         ) : (
           <Button
+            className="text-black"
             key={page}
             variant={currentPage === page ? "default" : "outline"}
             size="sm"
@@ -221,6 +237,7 @@ function Pagination({
         )
       )}
       <Button
+        className="bg-foreground text-white"
         variant="outline"
         size="sm"
         onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))}

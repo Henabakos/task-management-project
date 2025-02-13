@@ -11,7 +11,7 @@ const router = express.Router();
 
 router.use("/auth", authRoutes);
 router.use("/projects", projectRoutes);
-router.use("/team", teamRoutes);
+router.use("/teams", teamRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/integrations", integrationRoutes);
