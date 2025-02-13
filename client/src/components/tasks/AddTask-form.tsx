@@ -138,7 +138,7 @@ export function AddTaskForm({ projectId, status }: AddTaskFormProps) {
               <PopoverTrigger asChild>
                 <Button
                   variant={"outline"}
-                  className={`w-full justify-start text-left font-normal ${
+                  className={`w-full justify-start text-left font-normal bg-foreground border border-gray-700 ${
                     !dueDate && "text-muted-foreground"
                   }`}
                 >

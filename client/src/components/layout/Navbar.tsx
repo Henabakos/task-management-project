@@ -21,7 +21,7 @@ export function Navbar() {
             <Menu className="h-5 w-5" />
           </Button>
           <div className="hidden md:flex items-center space-x-4 text-xl font-semibold">
-            <Link to="/dashboard" className="text-zinc-200 hover:text-white">
+            <Link to="/" className="text-zinc-200 hover:text-white">
               Dashboard
             </Link>
           </div>

@@ -145,7 +145,7 @@ export function CreateProjectForm() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start text-left font-normal"
+              className="w-full justify-start text-left font-normal bg-foreground border border-gray-700"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
               {formData.deadline ? (
@@ -173,7 +173,7 @@ export function CreateProjectForm() {
           name="team"
           value={formData.team}
           onChange={handleTeamChange}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded bg-foreground border-gray-700"
         >
           <option value="">Choose a team</option>
           {loading ? (
