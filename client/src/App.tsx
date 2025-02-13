@@ -13,9 +13,11 @@ import { ProjectDetail } from "./components/projects/Project-Detail";
 import LoginPage from "./components/users/Login";
 import { KanbanBoard } from "./components/tasks/KanbanBoard";
 import TeamManagement from "./pages/Team-Management";
+import useAuth from "./hooks/useAuth";
 
 const AppContent = () => {
   const location = useLocation();
+  const currentUser = useAuth();
   const isLoginPage = location.pathname === "/login";
 
   return (
